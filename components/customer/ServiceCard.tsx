@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Service } from '../../types';
 import { useCart } from '../../hooks/useCart';
 import Button from '../ui/Button';
@@ -10,18 +9,28 @@ interface ServiceCardProps {
   onViewDetails?: (service: Service) => void;
 }
 
-
 const ServiceCard: React.FC<ServiceCardProps> = ({ service, onViewDetails }) => {
   const [quantity, setQuantity] = useState(1);
   const [showQuickActions, setShowQuickActions] = useState(false);
   const { addToCart, getTotalItems } = useCart();
-  // Add this to your existing useState declarations
-const [progressActive, setProgressActive] = useState(true);
+  
+  // Use useRef for timeout instead of window property
+  const hideToastTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleAddToCart = () => {
     addToCart(service, quantity);
     setShowQuickActions(true);
-    setTimeout(() => setShowQuickActions(false), 4000);
+    
+    // Clear any existing timeout
+    if (hideToastTimeoutRef.current) {
+      clearTimeout(hideToastTimeoutRef.current);
+    }
+    
+    // Set 10-second timeout
+    hideToastTimeoutRef.current = setTimeout(() => {
+      setShowQuickActions(false);
+    }, 10000); // 10 seconds
+    
     setQuantity(1);
   };
 
@@ -115,62 +124,38 @@ const [progressActive, setProgressActive] = useState(true);
             )}
           </div>
           {/* Quick Actions Popup */}
-{/* Quick Actions Popup - With Progress Bar */}
-{showQuickActions && (
-  <div 
-    className="fixed bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-900 rounded-2xl p-4 z-50 shadow-2xl max-w-sm w-full mx-4 animate-in slide-in-from-bottom-8 duration-300"
-    onMouseEnter={() => {
-      if (window.hideToastTimeout) {
-        clearTimeout(window.hideToastTimeout);
-        setProgressActive(false); // Pause progress bar
-      }
-    }}
-    onMouseLeave={() => {
-      window.hideToastTimeout = setTimeout(() => {
-        setShowQuickActions(false);
-      }, 5000);
-      setProgressActive(true); // Resume progress bar
-    }}
-  >
-    {/* Progress Bar */}
-    <div className="absolute top-0 left-0 w-full h-1 bg-gray-700 rounded-t-2xl">
-      <div 
-        className={`h-full bg-green-500 rounded-t-2xl transition-all duration-5000 ease-linear ${
-          progressActive ? 'w-full' : 'w-0'
-        }`}
-      />
-    </div>
-    
-    <div className="flex items-center justify-between pt-1">
-      <div className="flex items-center space-x-3">
-        <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-          <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-          </svg>
-        </div>
-        <div>
-          <p className="text-white font-medium text-sm">Added to cart</p>
-          <p className="text-gray-400 text-xs">{getTotalItems()} items</p>
-        </div>
-      </div>
-      <div className="flex space-x-2">
-        <button 
-          onClick={() => setShowQuickActions(false)}
-          className="text-gray-400 hover:text-white text-sm font-medium px-3 py-1 rounded-lg hover:bg-white/10 transition-colors"
-        >
-          Close
-        </button>
-        <a
-          href="/customer/cart"
-          className="bg-white text-gray-900 text-sm font-medium px-3 py-1 rounded-lg hover:bg-gray-100 transition-colors"
-          onClick={() => setShowQuickActions(false)}
-        >
-          View
-        </a>
-      </div>
-    </div>
-  </div>
-)}
+          {showQuickActions && (
+            <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-900 rounded-2xl p-4 z-50 shadow-2xl max-w-sm w-full mx-4 animate-in slide-in-from-bottom-8 duration-300">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                    <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-white font-medium text-sm">Added to cart</p>
+                    <p className="text-gray-400 text-xs">{getTotalItems()} items</p>
+                  </div>
+                </div>
+                <div className="flex space-x-2">
+                  <button 
+                    onClick={() => setShowQuickActions(false)}
+                    className="text-gray-400 hover:text-white text-sm font-medium px-3 py-1 rounded-lg hover:bg-white/10 transition-colors"
+                  >
+                    Close
+                  </button>
+                  <a
+                    href="/customer/cart"
+                    className="bg-white text-gray-900 text-sm font-medium px-3 py-1 rounded-lg hover:bg-gray-100 transition-colors"
+                    onClick={() => setShowQuickActions(false)}
+                  >
+                    View
+                  </a>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
