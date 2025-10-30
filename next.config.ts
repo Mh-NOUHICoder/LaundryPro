@@ -1,22 +1,14 @@
 // next.config.ts
 import type { NextConfig } from 'next';
 
-// Note: Keep Node-only modules out of client bundles
+// Minimal Next.js config for production builds with Turbopack enabled
 const nextConfig: NextConfig = {
-  webpack: (config, { isServer }) => {
-    if (!isServer) {
-      config.resolve = config.resolve || {};
-      config.resolve.fallback = {
-        ...(config.resolve.fallback || {}),
-        fs: false,
-        child_process: false,
-        net: false,
-        tls: false,
-        dns: false,
-      };
-    }
-    return config;
-  },
+  reactStrictMode: true,
+  // Add empty turbopack config to silence Turbopack/webpack conflict
+  turbopack: {},
+  // If you need to explicitly disable Turbopack in CI or production builds,
+  // you can set `experimental.turbo = undefined` or use the --webpack flag
+  // in your build script (see package.json). For now, keep the minimal config.
 };
 
 export default nextConfig;
