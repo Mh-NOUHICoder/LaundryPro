@@ -15,13 +15,14 @@ export function useAuthRedirect(requiredRole?: 'customer' | 'admin' | 'staff') {
       return;
     }
 
-    if (requiredRole && session.user.role !== requiredRole) {
-      // Wrong role, redirect to appropriate dashboard
-      const redirectPath = session.user.role === 'admin' 
-        ? '/admin/dashboard' 
-        : '/customer/dashboard';
-      router.replace(redirectPath);
-      return;
+    if (requiredRole) {
+      const role = (session.user as any)?.role;
+      if (role !== requiredRole) {
+        // Wrong role or role not present, redirect to appropriate dashboard
+        const redirectPath = role === 'admin' ? '/admin/dashboard' : '/customer/dashboard';
+        router.replace(redirectPath);
+        return;
+      }
     }
   }, [session, status, requiredRole, router]);
 

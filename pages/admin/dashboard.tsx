@@ -157,7 +157,8 @@ export default function AdminDashboard({ stats }: AdminDashboardProps) {
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const session = await getSession(context);
 
-  if (!session || session.user.role !== 'admin') {
+  const role = (session?.user as any)?.role;
+  if (!session || role !== 'admin') {
     return {
       redirect: {
         destination: '/auth/login',

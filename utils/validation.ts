@@ -35,3 +35,16 @@ export const loginSchema = z.object({
 });
 
 export type LoginFormData = z.infer<typeof loginSchema>;
+
+export const serviceSchema = z.object({
+  name: z.string().min(1, 'Name is required'),
+  description: z.string().min(10, 'Description must be at least 10 characters'),
+  price: z.number().min(0, 'Price must be positive'),
+  category: z.enum(['wash-fold', 'dry-clean', 'ironing', 'special', 'stain-removal', 'premium']),
+  image: z.string().url('Invalid image URL'),
+  estimatedTime: z.string().min(1, 'Estimated time is required'),
+  minimumOrder: z.number().min(0, 'Minimum order must be positive'),
+  unit: z.string().min(1, 'Unit is required'),
+  features: z.array(z.string()),
+  isActive: z.boolean(),
+});

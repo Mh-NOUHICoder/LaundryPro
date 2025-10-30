@@ -60,7 +60,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (session?.user) {
         try {
-          const response = await fetch(`/api/users/${session.user.id}`);
+          // NextAuth's Session.user may not include `id` by default.
+          // Try to use a typed id if available, otherwise fall back to email lookup.
+          const userId = (session.user as any)?.id;
+          let response: Response;
+
+          if (typeof userId === 'string' && userId.length > 0) {
+            response = await fetch(`/api/users/${userId}`);
+          } else if (session.user.email) {
+            // fallback: fetch by email via query param
+            const email = encodeURIComponent(session.user.email);
+            response = await fetch(`/api/users?email=${email}`);
+          } else {
+            dispatch({ type: 'SET_USER', payload: null });
+            return;
+          }
+
           if (response.ok) {
             const userData = await response.json();
             dispatch({ type: 'SET_USER', payload: userData });
